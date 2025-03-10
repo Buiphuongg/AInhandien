@@ -1,9 +1,20 @@
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, request, url_for
 import cv2
+from flask import redirect
+
 from ultralytics import YOLO
-import os
+import mysql.connector
 
 app = Flask(__name__)
+# Kết nối đến MySQL
+conn = mysql.connector.connect(
+    host="localhost",   # Địa chỉ MySQL Server (thường là localhost)
+    user="root",        # Tên đăng nhập MySQL
+    password="06102003",# Mật khẩu MySQL
+    database="ainhandang"  # Tên database muốn kết nối
+)
+
+
 
 # 🔹 Danh sách file mô hình YOLO
 model_files = ["best_2.pt", "best_3.pt"]
@@ -55,11 +66,66 @@ def generate_frames():
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    cur = conn.cursor()
+    cur.execute("select * from traicay")
+    data = cur.fetchall()
+    cur.close()
+    return render_template('index.html',traicay = data)
+
+@app.route('/chitietloai')
+def detail():
+    cur = conn.cursor()
+    cur.execute("select * from loaitraicay")
+    data1 = cur.fetchall()
+    cur.execute("select * from traicay")
+    data2 = cur.fetchall()
+    cur.close()
+    return render_template('chitietloai.html',loaitraicay=data1,traicay=data2)
 
 @app.route('/video_feed')
 def video_feed():
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/insert',methods=['POST'])
+def insert():
+    if request.method == "POST":
+        maloai = request.form['maloai']
+        tenloai = request.form['tenloai']
+        xuatxu = request.form['xuatxu']
+        soluong = request.form['soluong']
+        ghichu = request.form['ghichu']
+        matraicay = request.form['matraicay']
+        cur = conn.cursor()
+        cur.execute("insert into loaitraicay (ma_loai,ten_loai,xuat_xu,so_luong,ghi_chu,ma_trai_cay) values (%s,%s,%s,%s,%s,%s)",(maloai,tenloai,xuatxu,soluong,ghichu,matraicay))
+        conn.commit()
+        cur.close()
+        return redirect(url_for('detail'))
+
+@app.route('/delete/<string:maloai>', methods=['GET'])
+def delete(maloai):
+        cur = conn.cursor()
+        cur.execute("DELETE FROM loaitraicay WHERE ma_loai=%s", (maloai,))
+        conn.commit()  # Đảm bảo MySQL cập nhật dữ liệu
+        cur.close()
+        return redirect(url_for('detail'))
+
+@app.route('/update',methods=['POST','GET'])
+def update():
+    if request.method == 'POST':
+        maloai = request.form['maloai']
+        tenloai = request.form['tenloai']
+        xuatxu = request.form['xuatxu']
+        soluong = request.form['soluong']
+        ghichu = request.form['ghichu']
+        hinhanh= request.form['hinhanh']
+        matraicay = request.form['matraicay']
+        cur = conn.cursor()
+        cur.execute(
+            "update loaitraicay set ten_loai=%s, xuat_xu=%s, so_luong=%s, ghi_chu=%s, hinhanh=%s, ma_trai_cay=%s where ma_loai=%s",
+            (tenloai, xuatxu, soluong, ghichu, hinhanh,matraicay, maloai))
+        conn.commit()
+        cur.close()
+        return redirect(url_for('detail'))
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
