@@ -16,53 +16,6 @@ conn = mysql.connector.connect(
 
 
 
-# 🔹 Danh sách file mô hình YOLO
-model_files = ["best_2.pt", "best_3.pt"]
-models = []
-
-# 🔹 Load tất cả mô hình
-for model_path in model_files:
-        model = YOLO(model_path)
-        models.append(model)
-
-cap = cv2.VideoCapture(0)
-
-def detect_and_draw(frame):
-    """
-    Chạy nhận diện trên tất cả mô hình YOLO và vẽ bounding box.
-    """
-    for model in models:
-        results = model(frame)
-        class_names = model.names  # Lấy nhãn từ danh sách mô hình đầu tiên
-
-        for result in results:
-            for box in result.boxes:
-                x1, y1, x2, y2 = map(int, box.xyxy[0])
-                confidence = box.conf[0]
-                label_id = int(box.cls[0])
-                label = class_names[label_id]  # Lấy tên class
-                text = f"{label}: {confidence:.2f}"
-
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                cv2.putText(frame, text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-
-    return frame
-
-def generate_frames():
-    while True:
-        success, frame = cap.read()
-        if not success:
-            break
-
-        # Chạy nhận diện trên tất cả mô hình
-        frame = detect_and_draw(frame)
-
-        # Encode frame thành JPEG
-        _, buffer = cv2.imencode('.jpg', frame)
-        frame = buffer.tobytes()
-
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 @app.route('/')
 def index():
@@ -72,15 +25,48 @@ def index():
     cur.close()
     return render_template('index.html',traicay = data)
 
-@app.route('/chitietloai')
-def detail():
+@app.route('/traicay')
+def traicay():
+    timkiem = request.args.get('timkiem', '')
+
     cur = conn.cursor()
-    cur.execute("select * from loaitraicay")
-    data1 = cur.fetchall()
-    cur.execute("select * from traicay")
-    data2 = cur.fetchall()
+    if timkiem:
+        cur.execute(
+            "SELECT * FROM traicay WHERE ten_trai_cay LIKE %s OR ma_trai_cay LIKE %s OR  ghi_chu LIKE %s",
+            ( "%" + timkiem + "%", "%" + timkiem + "%", "%" + timkiem + "%")
+        )
+    else:
+        cur.execute("SELECT * FROM traicay")
+
+    data = cur.fetchall()
     cur.close()
-    return render_template('chitietloai.html',loaitraicay=data1,traicay=data2)
+    return render_template('traiCay.html',traicay = data)
+
+@app.route('/chitiet', methods=['GET', 'POST'])
+def chitiet():
+    timkiem = request.args.get('timkiem', '')
+
+    cur = conn.cursor()
+
+    if timkiem:
+        cur.execute(
+            "SELECT * FROM loaitraicay WHERE ten_loai LIKE %s OR xuat_xu LIKE %s OR so_luong LIKE %s OR ma_trai_cay LIKE %s OR ghi_chu LIKE %s",
+            ("%" + timkiem + "%", "%" + timkiem + "%", "%" + timkiem + "%", "%" + timkiem + "%", "%" + timkiem + "%")
+        )
+    else:
+        cur.execute("SELECT * FROM loaitraicay")
+
+    data1 = cur.fetchall()
+
+    cur.execute("SELECT * FROM traicay")
+    data2 = cur.fetchall()
+
+    cur.close()
+    return render_template('chiTietLoai.html', loaitraicay=data1, traicay=data2, timkiem=timkiem)
+
+@app.route('/nhandien')
+def nhandien():
+    return render_template('nhanDien.html')
 
 @app.route('/chitiet')
 def chitiet():
@@ -98,11 +84,12 @@ def insert():
         soluong = request.form['soluong']
         ghichu = request.form['ghichu']
         matraicay = request.form['matraicay']
+        hinhanh = request.form['hinhanh']
         cur = conn.cursor()
-        cur.execute("insert into loaitraicay (ma_loai,ten_loai,xuat_xu,so_luong,ghi_chu,ma_trai_cay) values (%s,%s,%s,%s,%s,%s)",(maloai,tenloai,xuatxu,soluong,ghichu,matraicay))
+        cur.execute("insert into loaitraicay (ma_loai,ten_loai,xuat_xu,so_luong,ghi_chu,ma_trai_cay,hinhanh) values (%s,%s,%s,%s,%s,%s,%s)",(maloai,tenloai,xuatxu,soluong,ghichu,matraicay,hinhanh))
         conn.commit()
         cur.close()
-        return redirect(url_for('detail'))
+        return redirect(url_for('chitiet'))
 
 @app.route('/delete/<string:maloai>', methods=['GET'])
 def delete(maloai):
@@ -110,7 +97,15 @@ def delete(maloai):
         cur.execute("DELETE FROM loaitraicay WHERE ma_loai=%s", (maloai,))
         conn.commit()  # Đảm bảo MySQL cập nhật dữ liệu
         cur.close()
-        return redirect(url_for('detail'))
+        return redirect(url_for('chitiet'))
+
+@app.route('/delete1/<string:matraicay>', methods=['GET'])
+def delete1(matraicay):
+        cur = conn.cursor()
+        cur.execute("DELETE FROM traicay WHERE ma_trai_cay=%s", (matraicay,))
+        conn.commit()  # Đảm bảo MySQL cập nhật dữ liệu
+        cur.close()
+        return redirect(url_for('traicay'))
 
 @app.route('/update',methods=['POST','GET'])
 def update():
@@ -128,7 +123,34 @@ def update():
             (tenloai, xuatxu, soluong, ghichu, hinhanh,matraicay, maloai))
         conn.commit()
         cur.close()
-        return redirect(url_for('detail'))
+        return redirect(url_for('chitiet'))
 
+@app.route('/insert1',methods=['POST'])
+def insert1():
+    if request.method == "POST":
+        matraicay = request.form['matraicay']
+        tentraicay = request.form['tentraicay']
+        ghichu = request.form['ghichu']
+        hinhanh = request.form['hinhanh']
+        cur = conn.cursor()
+        cur.execute("insert into traicay (ma_trai_cay,ten_trai_cay,ghi_chu,hinh_anh) values (%s,%s,%s,%s)",(matraicay,tentraicay,ghichu,hinhanh))
+        conn.commit()
+        cur.close()
+        return redirect(url_for('traicay'))
+
+@app.route('/update1',methods=['POST','GET'])
+def update1():
+    if request.method == 'POST':
+        matraicay = request.form['matraicay']
+        tentraicay = request.form['tentraicay']
+        ghichu = request.form['ghichu']
+        hinhanh = request.form['hinhanh']
+        cur = conn.cursor()
+        cur.execute(
+            "update traicay set ma_trai_cay=%s, ten_trai_cay=%s, ghi_chu=%s, hinh_anh=%s where ma_trai_cay=%s",
+            (matraicay,tentraicay,ghichu,hinhanh,matraicay))
+        conn.commit()
+        cur.close()
+        return redirect(url_for('traicay'))
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
