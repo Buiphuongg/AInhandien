@@ -68,12 +68,6 @@ def chitiet():
 def nhandien():
     return render_template('nhanDien.html')
 
-@app.route('/chitiet')
-def chitiet():
-    return render_template('Chitiet.html')
-@app.route('/video_feed')
-def video_feed():
-    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/insert',methods=['POST'])
 def insert():
