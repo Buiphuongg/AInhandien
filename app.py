@@ -82,6 +82,9 @@ def detail():
     cur.close()
     return render_template('chitietloai.html',loaitraicay=data1,traicay=data2)
 
+@app.route('/chitiet')
+def chitiet():
+    return render_template('Chitiet.html')
 @app.route('/video_feed')
 def video_feed():
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
