@@ -6,6 +6,8 @@ from ultralytics import YOLO
 import mysql.connector
 
 app = Flask(__name__)
+model = YOLO("best.pt")  # Sử dụng YOLOv8
+
 # Kết nối đến MySQL
 conn = mysql.connector.connect(
     host="localhost",   # Địa chỉ MySQL Server (thường là localhost)
@@ -13,9 +15,6 @@ conn = mysql.connector.connect(
     password="06102003",# Mật khẩu MySQL
     database="ainhandang"  # Tên database muốn kết nối
 )
-
-
-
 
 @app.route('/')
 def index():
@@ -146,5 +145,118 @@ def update1():
         conn.commit()
         cur.close()
         return redirect(url_for('traicay'))
+
+# Hàm nhận diện ảnh
+def detect_objects(frame):
+    results = model(frame)  # Dự đoán với YOLO
+    for result in results:
+        for box in result.boxes:
+            conf = float(box.conf[0])  # Độ tin cậy
+            if conf > 0.6:  # Chỉ hiển thị nếu độ tin cậy lớn hơn 0.6
+                x1, y1, x2, y2 = map(int, box.xyxy[0])  # Tọa độ bbox
+                cls = int(box.cls[0])  # Lớp dự đoán
+
+                # Kiểm tra model.names có tồn tại không
+                if hasattr(model, "names") and cls in model.names:
+                    label = f"{model.names[cls]} {conf:.2f}"
+                else:
+                    label = f"Object {cls} {conf:.2f}"
+
+                # Vẽ khung chữ nhật
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+
+                # Hiển thị nhãn
+                cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
+    return frame
+
+
+# Camera stream
+def generate_frames():
+    cap = cv2.VideoCapture(0)  # Mở webcam
+    while True:
+        success, frame = cap.read()
+        if not success:
+            break
+        frame = detect_objects(frame)  # Nhận diện đối tượng
+        _, buffer = cv2.imencode('.jpg', frame)
+        frame = buffer.tobytes()
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+    cap.release()
+
+@app.route('/video_feed')
+def video_feed():
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+import os
+from werkzeug.utils import secure_filename
+
+# Thư mục lưu ảnh
+UPLOAD_FOLDER = "static/img/upload/"
+DETECT_FOLDER = "static/img/detect/"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(DETECT_FOLDER, exist_ok=True)
+
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return "No file uploaded", 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return "No selected file", 400
+
+    # Lấy tên file gốc và đảm bảo an toàn
+    filename = secure_filename(file.filename)
+    file_path = os.path.join(UPLOAD_FOLDER, filename)
+    file.save(file_path)
+
+    # Đọc ảnh và nhận diện
+    img = cv2.imread(file_path)
+
+    # Dùng detect_objects để nhận diện ảnh và lấy số lượng quả hỏng
+    count_dict = {"rotten_apple": 0, "rotten_banana": 0, "rotten_mango": 0, "rotten_orange": 0, "rotten_peach": 0,
+                  "rotten_pear": 0}
+    results = model(img)  # Dự đoán với YOLO
+
+    for result in results:
+        for box in result.boxes:
+            conf = float(box.conf[0])  # Độ tin cậy
+            cls = int(box.cls[0])  # Lớp dự đoán
+
+            if conf > 0.5:
+                nhan_dang = model.names[cls]  # Lấy tên lớp từ model
+                if nhan_dang in count_dict:
+                    count_dict[nhan_dang] += 1  # Cập nhật số lượng quả hỏng
+
+                # Vẽ khung trên ảnh
+                x1, y1, x2, y2 = map(int, box.xyxy[0])  # Lấy tọa độ bbox
+                label = f"{nhan_dang} {conf:.2f}"
+
+                # Vẽ hình chữ nhật
+                cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+
+                # Hiển thị nhãn
+                cv2.putText(img, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
+    total_rotten = sum(count_dict.values())  # Tính tổng số quả hỏng
+
+    # Lưu vào database
+    cur = conn.cursor()
+    cur.execute("INSERT INTO dulieuhinhanh (duong_dan_hinh_anh, ngay_chup, so_luong_hu_hong) VALUES (%s, NOW(), %s)",
+                (file_path, total_rotten))
+    conn.commit()
+    cur.close()
+
+    # Lưu ảnh kết quả với cùng tên
+    output_path = os.path.join(DETECT_FOLDER, filename)
+    cv2.imwrite(output_path, img)  # Lưu lại ảnh có nhãn
+
+    return render_template("nhanDien.html", uploaded=True, detected_image=output_path)
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=5001)

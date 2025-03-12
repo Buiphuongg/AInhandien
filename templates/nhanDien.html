@@ -1,50 +1,54 @@
 {% extends "base.html" %}
 {% block head %}
     <title>Nhận diện</title>
-    <style>
-        .preview-box {
-            width: 100%;
-            height: 300px;
-            border: 2px dashed #ccc;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #f8f9fa;
-            position: relative;
-        }
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-    </style>
 {% endblock %}
 
 {% block body %}
-<div class="container py-5 pt-5 mt-5">
-    <div class="container py-5">
-    <h1 class="mt-3 mb-5 pt-3">Nhận Diện Hoa Quả Hỏng</h1>
+<div class="container pt-5 mt-5">
+    <h1 class="mt-5 pt-5">Nhận Diện Hoa Quả Hỏng</h1>
     <div class="row g-4">
-        <!-- Khung chọn ảnh -->
+        <!-- Nhận diện qua Camera -->
         <div class="col-md-6">
-            <div class="preview-box" id="imagePreview">
-                <span>Chọn ảnh để nhận diện</span>
+            <h3 class="text-center">Nhận diện qua Camera</h3>
+            <div class="text-center mb-3">
+                <button class="btn btn-primary" id="startBtn" onclick="startCamera()">Bật Camera</button>
+                <button class="btn btn-danger" id="stopBtn" onclick="stopCamera()" style="display: none;">Tắt Camera</button>
             </div>
-            <input type="file" id="uploadImage" accept="image/*" class="form-control mt-2">
-            <button class="btn btn-primary mt-2 w-100" onclick="processImage()">Nhận diện từ ảnh</button>
+            <div class="preview-box mt-4" id="imagePreview">
+                <img id="video" src="" alt="Camera sẽ hiển thị tại đây">
+            </div>
         </div>
 
-        <!-- Khung camera -->
+        <!-- Upload ảnh để nhận diện -->
         <div class="col-md-6">
-            <div class="preview-box" id="videoContainer">
-                <video id="webcam" autoplay></video>
-            </div>
-            <button class="btn btn-success mt-2 w-100" onclick="startCamera()">Bật Camera</button>
-            <button class="btn btn-danger mt-2 w-100" onclick="captureFrame()">Nhận diện từ Camera</button>
+            <h3 class="text-center">Upload Ảnh để Nhận diện</h3>
+            <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" class="text-center">
+                <div class="upload-container">
+                    <input type="file" name="file" class="form-control mb-2" multiple>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </div>
+            </form>
+            {% if uploaded %}
+                <div class="preview-box mt-3 text-center">
+                    <img src="{{ detected_image  }}" class="image-frame">
+                </div>
+            {% endif %}
+
         </div>
-    </div>
     </div>
 </div>
 
+<script>
+    function startCamera() {
+        document.getElementById("video").src = "/video_feed";
+        document.getElementById("startBtn").style.display = "none";
+        document.getElementById("stopBtn").style.display = "inline";
+    }
 
+    function stopCamera() {
+        document.getElementById("video").src = "";
+        document.getElementById("startBtn").style.display = "inline";
+        document.getElementById("stopBtn").style.display = "none";
+    }
+</script>
 {% endblock %}
