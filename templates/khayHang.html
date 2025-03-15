@@ -12,11 +12,11 @@
                     <div class="col-lg-12">
                         <div class="row g-4">
                             <div class="col-xl-3">
-                                <button class="btn btn-primary p-3 text-white " data-bs-toggle="modal" data-bs-target="#myModal">Thêm trái cây</button>
+                                <button class="btn btn-primary p-3 text-white " data-bs-toggle="modal" data-bs-target="#myModal">Thêm khay hàng</button>
                             </div>
                             <div class="col-6">
-                                <form method="GET" action="{{ url_for('chiTietLoai.chitiet') }}" class="input-group w-100 mx-auto d-flex">
-                                    <input type="search" name="timkiem1" class="form-control p-3" placeholder="Nhập từ khóa tìm kiếm..." value="{{ search_query }}">
+                                <form method="GET" action="{{ url_for('khayhang.khayhang_view') }}" class="input-group w-100 mx-auto d-flex">
+                                    <input type="search" name="timkiem2" class="form-control p-3" placeholder="Nhập từ khóa tìm kiếm..." value="{{ search_query }}">
                                     <button type="submit" class="input-group-text p-3"><i class="fa fa-search"></i></button>
                                 </form>
                             </div>
@@ -39,24 +39,18 @@
                                         <table class="table">
                                             <thead>
                                               <tr>
-                                                <th scope="col"></th>
-                                                <th scope="col">Mã loại</th>
-                                                <th scope="col">Tên loại</th>
-                                                <th scope="col">Xuất xứ</th>
+                                                <th scope="col">Mã khay hàng</th>
+                                                <th scope="col">Tên khay hàng</th>
                                                 <th scope="col">Số lượng</th>
-                                                <th scope="col">Tên trái cây</th>
+                                                <th scope="col">Trạng thái</th>
                                                 <th scope="col">Ghi chú</th>
-                                                <th scope="col">Hành động</th>
+                                                <th scope="col">Tên loại trái cây</th>
+
                                               </tr>
                                             </thead>
-                                            {% for row in loaitraicay %}
+                                            {% for row in khayhang %}
                                             <tbody>
                                                 <tr>
-                                                    <th scope="row">
-                                                        <div class="d-flex align-items-center">
-                                                            <img src="{{ url_for('static', filename='img/' + row.5 if row.5 and row.5 != 'None' else 'img/apple.jpg') }}" class="img-fluid me-5 rounded-circle" style="width: 80px; height: 80px;" alt="">
-                                                        </div>
-                                                    </th>
                                                     <td>
                                                         <p class="mb-0 mt-4">{{ row.0 }}</p>
                                                     </td>
@@ -67,17 +61,17 @@
                                                         <p class="mb-0 mt-4">{{ row.2 }}</p>
                                                     </td>
                                                     <td>
-                                                        <p class="mb-0 mt-4">{{ row.8 }}</p>
-                                                    </td>
-                                                    <td>
-                                                        <p class="mb-0 mt-4">{{ row.7 }}</p>
-                                                    </td>
-                                                    <td>
                                                         <p class="mb-0 mt-4">{{ row.3 }}</p>
                                                     </td>
                                                     <td>
-                                                        <a href="/update/{{ row.0 }}" class="btn border border-secondary rounded-pill mb-0 mt-4 text-primary" data-bs-toggle="modal" data-bs-target="#modaledit{{row.0}}">Sửa</a>
-                                                        <a href="/delete/{{ row.0 }}" class="btn border border-secondary rounded-pill mb-0 mt-4 text-primary">Xóa</a>
+                                                        <p class="mb-0 mt-4">{{ row.4 }}</p>
+                                                    </td>
+                                                    <td>
+                                                        <p class="mb-0 mt-4">{{ row.6 }}</p>
+                                                    </td>
+                                                    <td>
+                                                        <a href="/update3/{{ row.0 }}" class="btn border border-secondary rounded-pill mb-0 mt-4 text-primary" data-bs-toggle="modal" data-bs-target="#modaledit{{row.0}}">Sửa</a>
+                                                        <a href="/delete3/{{ row.0 }}" class="btn border border-secondary rounded-pill mb-0 mt-4 text-primary">Xóa</a>
                                                     </td>
 
                                                 </tr>
@@ -103,27 +97,27 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <form action="{{ url_for('chiTietLoai.insert') }}" method="POST">
+                        <form action="{{ url_for('khayhang.insert3') }}" method="POST">
                             <div class=" form-group pb-3">
-                            <label >Tên loại</label>
-                            <input type="text" class="form-control" name="tenloai" placeholder="tên loại">
+                            <label >Tên khay hàng</label>
+                            <input type="text" class="form-control" name="tenkhay" placeholder="tên khay">
                           </div>
                             <div class=" form-group pb-3">
-                            <label >Xuất xứ</label>
-                            <input type="text" class="form-control" name="xuatxu" placeholder="xuất xứ">
+                            <label >Số lượng</label>
+                            <input type="text" class="form-control" name="soluong" placeholder="số lượng">
                           </div>
                           <div class=" form-group pb-3">
-                            <label >Hình Ảnh</label>
-                            <input type="file" class="form-control" name="hinhanh" placeholder="hình ảnh">
+                            <label >Trạng thái</label>
+                            <input type="text" class="form-control" name="trangthai" placeholder="trạng thái">
                           </div>
                           <div class=" form-group pb-3">
                             <label >Ghi chú</label>
                             <input type="text" class="form-control" name="ghichu" placeholder="ghi chú">
                           </div>
                           <div class="form-group pb-3">
-                            <label>Tên trái cây</label>
-                            <select class="form-control" name="tentraicay">
-                                {% for roww in traicay %}
+                            <label>Mã loai</label>
+                            <select class="form-control" name="tenloai">
+                                {% for roww in loaitraicay %}
                                     <option value="{{ roww.1 }}">{{ roww.1 }}</option>
                                 {% endfor %}
                             </select>
@@ -135,41 +129,41 @@
             </div>
         </div>
 <!--Update-->
-{% for row in loaitraicay %}
+{% for row in khayhang %}
         <div class="modal fade" id="modaledit{{row.0}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content rounded-0">
                     <div class="modal-header">
-                        <h5 class="modal-title">Sửa loại trái cây</h5>
+                        <h5 class="modal-title">Sửa khay hàng</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <form action="{{ url_for('chiTietLoai.update') }}" method="POST">
+                        <form action="{{ url_for('khayhang.update3') }}" method="POST">
                           <div class=" form-group pb-3">
-                            <label>Mã loại</label>
-                            <input type="text" class="form-control" name="maloai" value="{{row.0}}">
+                            <label>Mã khay hàng</label>
+                            <input type="text" class="form-control" name="makhay" value="{{row.0}}">
                           </div>
                             <div class=" form-group pb-3">
-                            <label >Tên loại</label>
-                            <input type="text" class="form-control" name="tenloai" value="{{row.1}}">
+                            <label >Tên khay hàng</label>
+                            <input type="text" class="form-control" name="tenkhay" value="{{row.1}}">
                           </div>
                             <div class=" form-group pb-3">
-                            <label >Xuất xứ</label>
-                            <input type="text" class="form-control" name="xuatxu" value="{{row.2}}">
+                            <label >Số lượng</label>
+                            <input type="text" class="form-control" name="soluong" value="{{row.2}}">
                           </div>
-                          <div class=" form-group pb-3">
-                            <label >Hình Ảnh</label>
-                            <input type="file" class="form-control" name="hinhanh" value="">
+                            <div class=" form-group pb-3">
+                            <label >Trạng thái</label>
+                            <input type="text" class="form-control" name="trangthai" value="{{row.4}}">
                           </div>
                           <div class=" form-group pb-3">
                             <label >Ghi chú</label>
-                            <input type="text" class="form-control" name="ghichu" value="{{row.3}}">
+                            <input type="text" class="form-control" name="ghichu" value="{{row.5}}">
                           </div>
                           <div class="form-group pb-3">
-                            <label>Tên trái cây</label>
-                            <select class="form-control" name="tentraicay">
-                                {% for roww in traicay %}
-                                    <option value="{{ roww.1 }}" {% if row.7 == roww.1 %} selected {% endif %}>
+                            <label>Mã loai</label>
+                            <select class="form-control" name="tenloai">
+                                {% for roww in loaitraicay %}
+                                    <option value="{{ roww.1 }}" {% if row.5 == roww.1 %} selected {% endif %}>
                                         {{ roww.1 }}
                                     </option>
                                 {% endfor %}

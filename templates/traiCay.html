@@ -15,7 +15,7 @@
                                 <button class="btn btn-primary p-3 text-white " data-bs-toggle="modal" data-bs-target="#myModal">Thêm trái cây</button>
                             </div>
                             <div class="col-6">
-                                <form method="GET" action="{{ url_for('traicay') }}" class="input-group w-100 mx-auto d-flex">
+                                <form method="GET" action="{{ url_for('traiCay.traicay') }}" class="input-group w-100 mx-auto d-flex">
                                     <input type="search" name="timkiem" class="form-control p-3" placeholder="Nhập từ khóa tìm kiếm..." value="{{ search_query }}">
                                     <button type="submit" class="input-group-text p-3"><i class="fa fa-search"></i></button>
                                 </form>
@@ -70,11 +70,11 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <form action="{{ url_for('insert1') }}" method="POST">
-                          <div class=" form-group pb-3">
-                            <label>Mã trái cây</label>
-                            <input type="text" class="form-control" name="matraicay" placeholder="mã trái cây">
-                          </div>
+                        <form action="{{ url_for('traiCay.insert1') }}" method="POST">
+<!--                          <div class=" form-group pb-3">-->
+<!--                            <label>Mã trái cây</label>-->
+<!--                            <input type="text" class="form-control" name="matraicay" placeholder="mã trái cây">-->
+<!--                          </div>-->
                           <div class=" form-group pb-3">
                             <label >Tên trái cây</label>
                             <input type="text" class="form-control" name="tentraicay" placeholder="tên trái cây">
@@ -103,7 +103,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <form action="{{ url_for('update1') }}" method="POST">
+                        <form action="{{ url_for('traiCay.update1') }}" method="POST">
                           <div class=" form-group pb-3">
                             <label>Mã trái cây</label>
                             <input type="text" class="form-control" name="matraicay" value="{{row.0}}">

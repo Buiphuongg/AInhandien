@@ -12,7 +12,7 @@
                         <h1 class="mb-5 display-3 text-primary">Nhanh Chóng Phát Hiện Trái Cây Hư Hỏng</h1>
                         <div class="button-container">
                             <button  type="submit" class="btn btn-primary border-2 border-secondary py-3 px-4 rounded-pill ">
-                                <a href="{{url_for('nhandien')}}" class="text-white">Nhận Diện</a>
+                                <a href="{{url_for('nhanDien.nhandien')}}" class="text-white">Nhận Diện</a>
                             </button>
                         </div>
                     </div>
@@ -117,7 +117,7 @@
                                                     <h4>{{ row.1 }}</h4>
                                                     <p>{{ row.3 }}</p>
                                                     <div class="d-flex justify-content-center">
-                                                        <a href="{{ url_for('chitiet', timkiem=row.1) }}" class="btn border border-secondary rounded-pill px-4 text-primary">Chi tiết</a>
+                                                        <a href="{{ url_for('chiTietLoai.chitiet', timkiem=row.1) }}" class="btn border border-secondary rounded-pill px-4 text-primary">Chi tiết</a>
                                                     </div>
                                                 </div>
                                             </div>
