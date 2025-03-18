@@ -8,6 +8,7 @@ from traiCay import traiCay
 from chiTietLoai import chiTietLoai
 from nhanDien import nhanDien
 from duLieuHinhAnh import duLieuHinhAnh
+from thongKe import thongKe
 from login import login_bp
 from db import get_db_connection  # Import kết nối từ db.py
 
@@ -17,6 +18,7 @@ app.register_blueprint(traiCay)
 app.register_blueprint(chiTietLoai)
 app.register_blueprint(nhanDien)
 app.register_blueprint(duLieuHinhAnh)
+app.register_blueprint(thongKe)
 app.register_blueprint(login_bp)
 
 @app.route('/')
@@ -27,8 +29,6 @@ def index():
     data = cur.fetchall()
     cur.close()
     return render_template('index.html',traicay = data)
-
-
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)

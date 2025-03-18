@@ -12,7 +12,12 @@ model = YOLO("best.pt")  # Sử dụng YOLOv8
 
 @nhanDien.route('/nhandien')
 def nhandien():
-    return render_template('nhanDien.html')
+    conn = get_db_connection()  # Tạo kết nối mới
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM khayhang")
+    data = cur.fetchall()
+    cur.close()
+    return render_template('nhanDien.html',khayhang=data)
 
 # Hàm nhận diện ảnh
 def detect_objects(frame):

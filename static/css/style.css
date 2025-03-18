@@ -522,3 +522,6 @@
 }
 /*** Footer End ***/
 
+.user-icon::after {
+        display: none !important;
+    }

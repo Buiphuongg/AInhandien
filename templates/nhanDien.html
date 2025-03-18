@@ -1,123 +1,124 @@
 {% extends "base.html" %}
+
 {% block head %}
-    <title>Nhận diện</title>
+    <title>Nhận diện Trái Cây</title>
     <style>
         .card img {
             transition: transform 0.3s ease-in-out;
             cursor: pointer;
+            border-radius: 10px;
         }
         .card img:hover {
             transform: scale(1.05);
+        }
+        .container-custom {
+            max-width: 900px;
+            margin: auto;
+        }
+        .btn-custom {
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 8px;
+        }
+        .preview-box {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            border-radius: 10px;
+            background: #f8f9fa;
         }
     </style>
 {% endblock %}
 
 {% block body %}
-<div class="container pt-5 mt-5">
-    <h1 class="mt-5 pt-5 text-center">Nhận Diện Hoa Quả Hỏng</h1>
-    <div class="row g-4">
+        <div class="container-fluid page-header py-5">
+            <h1 class="text-center text-white display-6">Thông Tin Khay Hàng</h1>
+            <ol class="breadcrumb justify-content-center mb-0">
+                <li class="breadcrumb-item"><a href="#">Trang Chủ</a></li>
+                <li class="breadcrumb-item"><a href="#">Danh Mục</a></li>
+                <li class="breadcrumb-item active text-white">Thông Tin Khay Hàng</li>
+            </ol>
+        </div>
+
+    <div class="container container-custom pt-5">
+        <div class="d-flex justify-content-center gap-4">
+            <button class="btn btn-outline-primary btn-custom" id="btnDetectVideo">Nhận diện từ Video</button>
+            <button class="btn btn-primary btn-custom" id="btnDetectUpload">Nhận diện từ Ảnh</button>
+        </div>
+    </div>
+
+    <div class="container container-custom mt-4">
         <!-- Nhận diện qua Camera -->
-        <div class="col-md-6">
+        <div id="cameraSection" style="display: none;">
             <h3 class="text-center">Nhận diện qua Camera</h3>
             <div class="text-center mb-3">
-                <button class="btn btn-primary" id="startBtn" onclick="startCamera()">Bật Camera</button>
-                <button class="btn btn-danger" id="stopBtn" onclick="stopCamera()" style="display: none;">Tắt Camera</button>
+                <button class="btn btn-primary btn-custom" id="startBtn" onclick="startCamera()">Bật Camera</button>
+                <button class="btn btn-danger btn-custom" id="stopBtn" onclick="stopCamera()" style="display: none;">Tắt Camera</button>
             </div>
-            <div class="preview-box mt-4 text-center" id="imagePreview">
+            <div class="preview-box text-center">
                 <img id="video" src="" class="img-fluid" alt="Camera sẽ hiển thị tại đây">
             </div>
         </div>
 
-        <!-- Upload ảnh hoặc thư mục -->
-        <div class="col-md-6">
+        <!-- Upload ảnh -->
+        <div id="uploadSection">
             <h3 class="text-center">Upload để Nhận diện</h3>
-            <form id="uploadForm" action="{{ url_for('nhanDien.upload_files') }}" method="post" enctype="multipart/form-data">
+            <form id="uploadForm" action="{{ url_for('nhanDien.upload_files') }}" method="post" enctype="multipart/form-data" class="p-4 border rounded shadow-sm bg-light">
                 <div class="mb-3">
-                    <label class="fw-bold">Chọn phương thức upload:</label>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="uploadType" id="uploadFile" value="file" checked>
-                        <label class="form-check-label" for="uploadFile">Chọn file</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="uploadType" id="uploadFolder" value="folder">
-                        <label class="form-check-label" for="uploadFolder">Chọn thư mục</label>
-                    </div>
+                    <label for="traySelect" class="form-label fw-bold">Chọn khay hàng:</label>
+                    <select id="traySelect" name="tray" class="form-select">
+                        {% for row in khayhang %}
+                            <option value="{{ row.0 }}">{{ row.0 }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
-                <div class="d-flex gap-2">
-                    <input type="file" id="fileInput" name="files" multiple accept="image/*" class="form-control flex-grow-1">
-                    <button type="submit" id="uploadBtn" class="btn btn-primary" disabled>Upload</button>
+                <div class="mb-3">
+                    <input type="file" id="fileInput" name="files" multiple accept="image/*" class="form-control">
                 </div>
+                <button type="submit" id="uploadBtn" class="btn btn-primary btn-custom w-100" disabled>Upload</button>
             </form>
         </div>
-    </div>
 
-    {% if uploaded %}
-        <h3 class="mt-4 text-center">📌 Kết quả nhận diện</h3>
-        <div class="row row-cols-1 row-cols-md-3 g-4">
-            {% for image in detected_images %}
-                <div class="col">
-                    <div class="card shadow-sm">
-                        <img src="{{ image }}" class="card-img-top" alt="Kết quả nhận diện" onclick="openModal('{{ image }}')">
-                        <div class="card-body text-center">
-                            <p class="fw-bold text-success">🌿 Kết quả nhận diện</p>
-                        </div>
+    </div>
+        {% if uploaded %}
+            <h3 class="mt-4 text-center">Kết quả nhận diện</h3>
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for image in detected_images %}
+            <div class="col">
+                <div class="card shadow-sm">
+                    <img src="{{ image }}" class="card-img-top" alt="Kết quả nhận diện" onclick="openModal('{{ image }}')">
+                    <div class="card-body text-center">
+                        <p class="fw-bold text-success">Kết quả nhận diện</p>
                     </div>
                 </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
-    <!-- Modal hiển thị ảnh lớn -->
-    <div id="imageModal" class="modal fade" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Chi tiết ảnh nhận diện</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body text-center">
-                    <img id="modalImage" class="img-fluid" alt="Ảnh nhận diện">
-                </div>
             </div>
-        </div>
+        {% endfor %}
+
+{% endif %}
+
     </div>
-</div>
 
-<script>
-    function startCamera() {
-        document.getElementById("video").src = "/video_feed";
-        document.getElementById("startBtn").style.display = "none";
-        document.getElementById("stopBtn").style.display = "inline";
-    }
-
-    function stopCamera() {
-        document.getElementById("video").src = "";
-        document.getElementById("startBtn").style.display = "inline";
-        document.getElementById("stopBtn").style.display = "none";
-    }
-
-    document.querySelectorAll("input[name='uploadType']").forEach(radio => {
-        radio.addEventListener("change", function() {
-            let fileInput = document.getElementById("fileInput");
-            if (this.value === "folder") {
-                fileInput.setAttribute("webkitdirectory", "");
-                fileInput.setAttribute("directory", "");
-            } else {
-                fileInput.removeAttribute("webkitdirectory");
-                fileInput.removeAttribute("directory");
-            }
+    <script>
+        document.getElementById("btnDetectVideo").addEventListener("click", function() {
+            document.getElementById("cameraSection").style.display = "block";
+            document.getElementById("uploadSection").style.display = "none";
         });
-    });
-
-    document.getElementById("fileInput").addEventListener("change", function() {
-        let uploadBtn = document.getElementById("uploadBtn");
-        uploadBtn.disabled = this.files.length === 0;
-    });
-
-    function openModal(imageSrc) {
-        document.getElementById("modalImage").src = imageSrc;
-        var myModal = new bootstrap.Modal(document.getElementById('imageModal'));
-        myModal.show();
-    }
-</script>
+        document.getElementById("btnDetectUpload").addEventListener("click", function() {
+            document.getElementById("cameraSection").style.display = "none";
+            document.getElementById("uploadSection").style.display = "block";
+            stopCamera();
+        });
+        function startCamera() {
+            document.getElementById("video").src = "/video_feed";
+            document.getElementById("startBtn").style.display = "none";
+            document.getElementById("stopBtn").style.display = "inline";
+        }
+        function stopCamera() {
+            document.getElementById("video").src = "";
+            document.getElementById("startBtn").style.display = "inline";
+            document.getElementById("stopBtn").style.display = "none";
+        }
+        document.getElementById("fileInput").addEventListener("change", function() {
+            document.getElementById("uploadBtn").disabled = this.files.length === 0;
+        });
+    </script>
 {% endblock %}
