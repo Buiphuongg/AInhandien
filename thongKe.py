@@ -1,7 +1,6 @@
 from flask import Flask, render_template, Response, request, url_for
 from flask import redirect
 from flask import Blueprint
-from db import get_db_connection
 import pandas as pd
 from flask import send_file
 from io import BytesIO

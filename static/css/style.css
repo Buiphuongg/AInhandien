@@ -525,3 +525,23 @@
 .user-icon::after {
         display: none !important;
     }
+
+.box {
+    width: 100%;
+    max-width: 400px;
+    position: relative;
+    z-index: 2;
+}
+.card {
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    line-height: 1.8;
+    background: white;
+}
+.logo img {
+    width: 100px;
+    display: block;
+    margin: 0 auto;
+    margin-bottom: 5px;
+}

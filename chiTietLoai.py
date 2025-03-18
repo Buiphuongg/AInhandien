@@ -1,8 +1,5 @@
 from flask import Flask, render_template, Response, request, url_for
-import cv2
 from flask import redirect
-from ultralytics import YOLO
-import mysql.connector
 from flask import Blueprint
 from db import get_db_connection  # Import kết nối từ db.py
 
