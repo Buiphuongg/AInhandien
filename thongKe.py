@@ -18,13 +18,7 @@ def thongke():
     cur = conn.cursor()
 
     # Truy vấn dữ liệu chính
-    cur.execute("""
-        SELECT dl.ma_khay_hang, dl.ngay_chup, dl.so_luong_hu_hong, 
-               kh.so_luong_trong_khay, kh.ten_khay_hang 
-        FROM dulieuhinhanh dl 
-        LEFT JOIN khayhang kh ON dl.ma_khay_hang = kh.ma_khay_hang
-        WHERE dl.ngay_chup = (SELECT MAX(ngay_chup) FROM dulieuhinhanh WHERE ma_khay_hang = dl.ma_khay_hang)
-    """)
+    cur.execute("SELECT dl.ma_khay_hang, dl.ngay_chup, dl.so_luong_hu_hong, kh.so_luong_trong_khay, kh.ten_khay_hang FROM dulieuhinhanh dl LEFT JOIN khayhang kh ON dl.ma_khay_hang = kh.ma_khay_hang")
     data1 = cur.fetchall()
 
     # Truy vấn tổng số lượng hư hỏng

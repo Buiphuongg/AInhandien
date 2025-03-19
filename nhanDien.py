@@ -23,7 +23,7 @@ def detect_objects(frame):
     for result in results:
         for box in result.boxes:
             conf = float(box.conf[0])  # Độ tin cậy
-            if conf > 0.6:  # Chỉ hiển thị nếu độ tin cậy lớn hơn 0.6
+            if conf > 0.5:  # Chỉ hiển thị nếu độ tin cậy lớn hơn 0.6
                 x1, y1, x2, y2 = map(int, box.xyxy[0])  # Tọa độ bbox
                 cls = int(box.cls[0])  # Lớp dự đoán
 

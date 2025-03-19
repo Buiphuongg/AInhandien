@@ -1,6 +1,8 @@
+import mysql
 from flask import Flask, render_template, Response, request, url_for
 from flask import redirect
 from flask import Blueprint
+from flask import flash
 from db import get_db_connection  # Import kết nối từ db.py
 
 chiTietLoai = Blueprint("chiTietLoai",__name__)
@@ -56,12 +58,21 @@ def insert():
 
 @chiTietLoai.route('/delete/<string:maloai>', methods=['GET'])
 def delete(maloai):
-        conn = get_db_connection()
-        cur = conn.cursor()
+    conn = get_db_connection()  # Tạo kết nối mới
+    cur = conn.cursor()
+    try:
         cur.execute("DELETE FROM loaitraicay WHERE ma_loai=%s", (maloai,))
         conn.commit()  # Đảm bảo MySQL cập nhật dữ liệu
+        flash("Xóa thành công!", "success")  # Hiển thị thông báo thành công
+    except mysql.connector.IntegrityError:
+        conn.rollback()  # Hoàn tác nếu có lỗi
+        flash("Không thể xóa! Loại trái cây này đang được sử dụng ở bảng khác.", "danger")
+    finally:
         cur.close()
-        return redirect(url_for('chiTietLoai.chitiet'))
+        conn.close()
+
+    return redirect(url_for('chiTietLoai.chitiet'))
+
 
 @chiTietLoai.route('/update',methods=['POST','GET'])
 def update():

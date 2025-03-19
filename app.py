@@ -1,26 +1,19 @@
-from flask import Flask, render_template, Response, request, url_for
 from flask import Flask, render_template, Response, url_for, redirect, session, request, send_from_directory, flash, jsonify
-
-import cv2
 from flask import redirect
-from ultralytics import YOLO
-import mysql.connector
 from khayHang import khayhang
 from traiCay import traiCay
 from chiTietLoai import chiTietLoai
 from nhanDien import nhanDien
 from duLieuHinhAnh import duLieuHinhAnh
 from thongKe import thongKe
-from db import get_db_connection  # Import kết nối từ db.py
+from canhBao import canhBao,start_email_thread
+from db import get_db_connection
 
-from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 import random
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-
-
 
 app = Flask(__name__)
 app.register_blueprint(khayhang)
@@ -29,6 +22,7 @@ app.register_blueprint(chiTietLoai)
 app.register_blueprint(nhanDien)
 app.register_blueprint(duLieuHinhAnh)
 app.register_blueprint(thongKe)
+app.register_blueprint(canhBao)
 
 app.secret_key = 'your_secret_key'
 
@@ -353,5 +347,7 @@ def doimk():
     return redirect(url_for('nguoidung'))
 
 
+
 if __name__ == "__main__":
+    start_email_thread()
     app.run(debug=True, port=5001)
