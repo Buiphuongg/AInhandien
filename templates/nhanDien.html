@@ -65,7 +65,7 @@
             <form id="uploadForm" action="{{ url_for('nhanDien.upload_files') }}" method="post" enctype="multipart/form-data" class="p-4 border rounded shadow-sm bg-light">
                 <div class="mb-3">
                     <label for="traySelect" class="form-label fw-bold">Chọn khay hàng:</label>
-                    <select id="traySelect" name="tray" class="form-select">
+                    <select id="traySelect" name="khayhang" class="form-select">
                         {% for row in khayhang %}
                             <option value="{{ row.0 }}">{{ row.0 }}</option>
                         {% endfor %}

@@ -72,6 +72,7 @@ os.makedirs(DETECT_FOLDER, exist_ok=True)
 
 @nhanDien.route('/upload_files', methods=['POST'])
 def upload_files():
+    khayhang = request.form.get('khayhang')
     if 'files' not in request.files:
         return "No file uploaded", 400
 
@@ -112,8 +113,8 @@ def upload_files():
         conn = get_db_connection()  # Tạo kết nối mới
         cur = conn.cursor()
         cur.execute(
-            "INSERT INTO dulieuhinhanh (duong_dan_hinh_anh, ngay_chup, so_luong_hu_hong) VALUES (%s, NOW(), %s)",
-            (file_path, total_rotten))
+            "INSERT INTO dulieuhinhanh (duong_dan_hinh_anh, ngay_chup, so_luong_hu_hong,ma_khay_hang) VALUES (%s, NOW(), %s,%s)",
+            (file_path, total_rotten,khayhang))
         conn.commit()
         cur.close()
 
