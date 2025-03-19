@@ -5,6 +5,7 @@ from ultralytics import YOLO
 import mysql.connector
 from flask import Blueprint
 from db import get_db_connection  # Import kết nối từ db.py
+from flask import flash
 khayhang = Blueprint("khayhang",__name__)
 
 
@@ -48,14 +49,25 @@ def insert3():
         cur.close()
         return redirect(url_for('khayhang.khayhang_view'))
 
+
 @khayhang.route('/delete3/<string:makhay>', methods=['GET'])
 def delete3(makhay):
-        conn = get_db_connection()  # Tạo kết nối mới
-        cur = conn.cursor()
+    conn = get_db_connection()  # Tạo kết nối mới
+    cur = conn.cursor()
+
+    try:
         cur.execute("DELETE FROM khayhang WHERE ma_khay_hang=%s", (makhay,))
         conn.commit()  # Đảm bảo MySQL cập nhật dữ liệu
+        flash("Xóa thành công!", "success")  # Hiển thị thông báo thành công
+    except mysql.connector.IntegrityError:
+        conn.rollback()  # Hoàn tác nếu có lỗi
+        flash("Không thể xóa! Khay hàng này đang được sử dụng ở bảng khác.", "danger")
+    finally:
         cur.close()
-        return redirect(url_for('khayhang.khayhang_view'))
+        conn.close()
+
+    return redirect(url_for('khayhang.khayhang_view'))
+
 
 @khayhang.route('/update3',methods=['POST','GET'])
 def update3():
